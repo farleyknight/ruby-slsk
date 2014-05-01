@@ -2,75 +2,10 @@ require 'digest/md5'
 require 'socket'
 require 'yaml'
 
-class LoginMessage
-  attr_accessor :username, :password, :version
+require_relative 'login/message'
+require_relative 'login/response'
+require_relative 'room_list/response'
 
-  def initialize(username, password, version)
-    @username = username
-    @password = password
-    @version  = version
-  end
-
-  def to_message
-    # hash = Digest::MD5.hexdigest(username + password)
-    message_length + content
-  end
-
-  def message_type
-    1
-  end
-
-  def message_length
-    pack(content.length)
-  end
-
-  def content
-    pack(message_type) +
-      pack(username) +
-      pack(password) +
-      pack(version)
-  end
-
-  def pack(object)
-    if object.is_a? Fixnum
-      [object].pack("L")
-    elsif object.is_a? String
-      # object + pack(object.length)
-      pack(object.length) + object
-    else
-      raise "Cannot handle type #{object.class}!"
-    end
-  end
-end
-
-class LoginResponse
-  attr_accessor :ip_address
-
-  def initialize(content)
-    @success       = content.read(4).unpack("L").first
-    @greet_length  = content.read(1).unpack("C").first
-
-    ip4            = content.read(1).unpack("C").first
-    ip3            = content.read(1).unpack("C").first
-    ip2            = content.read(1).unpack("C").first
-    ip1            = content.read(1).unpack("C").first
-
-    @ip_addresss   = [ip1, ip2, ip3, ip4].join(".")
-  end
-end
-
-class RoomListResponse
-  def initialize(content)
-    @count = n = content.read(4).unpack("L").first
-
-    while n > 0
-      length = content.read(4).unpack("L").first
-      length
-
-      n = n - 1
-    end
-  end
-end
 
 class MessageParser
   attr_accessor :io
@@ -89,9 +24,9 @@ class MessageParser
     type    = content.read(4).unpack("L").first
 
     if type == 1
-      LoginResponse.new(content)
+      Login::Response.new(content)
     elsif type == 64
-      RoomListResponse.new(content)
+      RoomList::Response.new(content)
     end
   end
 end
@@ -122,7 +57,7 @@ class ServerConnection
     s = TCPSocket.new(host, port)
 
     puts "Sending login message"
-    s.puts LoginMessage.new(username, password, 182).to_message
+    s.puts Login::Message.new(username, password, 182).to_message
 
     puts "Reading response"
     while line = s.gets
