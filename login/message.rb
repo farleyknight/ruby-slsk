@@ -1,6 +1,9 @@
+require_relative '../packer'
 
 module Login
   class Message
+    include Packer
+
     attr_accessor :username, :password, :version
 
     def initialize(username, password, version)
@@ -26,17 +29,6 @@ module Login
         pack(username) +
         pack(password) +
         pack(version)
-    end
-
-    def pack(object)
-      if object.is_a? Fixnum
-        [object].pack("L")
-      elsif object.is_a? String
-        # object + pack(object.length)
-        pack(object.length) + object
-      else
-        raise "Cannot handle type #{object.class}!"
-      end
     end
   end
 end

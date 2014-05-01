@@ -1,15 +1,29 @@
 
-
 module RoomList
   class Response
-    def initialize(content)
-      @count = n = content.read(4).unpack("L").first
+    attr_accessor :rooms
 
-      while n > 0
-        length = content.read(4).unpack("L").first
-        length
+    def initialize(scanner)
+      @rooms = []
+      n      = scanner.next_long!
 
-        n = n - 1
+      n.times do
+        @rooms << scanner.next_string!
+      end
+    end
+  end
+end
+
+module PrivilegedUsers
+  class Response
+    attr_accessor :users
+
+    def initialize(scanner)
+      @users = []
+      n      = scanner.next_long!
+
+      n.times do
+        @users << scanner.next_string!
       end
     end
   end

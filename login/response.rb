@@ -1,18 +1,12 @@
 
 module Login
   class Response
-    attr_accessor :ip_address
+    attr_accessor :success, :greeting, :ip_address
 
-    def initialize(content)
-      @success       = content.read(4).unpack("L").first
-      @greet_length  = content.read(1).unpack("C").first
-
-      ip4            = content.read(1).unpack("C").first
-      ip3            = content.read(1).unpack("C").first
-      ip2            = content.read(1).unpack("C").first
-      ip1            = content.read(1).unpack("C").first
-
-      @ip_addresss   = [ip1, ip2, ip3, ip4].join(".")
+    def initialize(scanner)
+      @success       = scanner.next_long!  # content.read(4).unpack("L").first
+      @greeting      = scanner.next_byte!   # content.read(1).unpack("C").first
+      @ip_addresss   = scanner.next_ip_address!
     end
   end
 end
