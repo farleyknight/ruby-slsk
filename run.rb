@@ -121,4 +121,8 @@ class ServerConnection
   end
 end
 
-ServerConnection.new.connect!
+thread = Thread.new do
+  ServerConnection.new.connect!
+end
+
+thread.join
